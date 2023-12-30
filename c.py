@@ -89,7 +89,14 @@ def create_pdf_with_word_wrap(input_file, output_file):
             c.setStrokeColorRGB(0, 0, 255)
         else:
             c.setStrokeColorRGB(255, 0, 0)
-        c.roundRect(inner_rect_x+.1*inch, inner_rect_y+.1*inch, inner_rect_width-.2*inch, inner_rect_height-.2*inch, 0.2 * inch, stroke=1)
+        c.roundRect(
+            inner_rect_x + 0.1 * inch,
+            inner_rect_y + 0.1 * inch,
+            inner_rect_width - 0.2 * inch,
+            inner_rect_height - 0.2 * inch,
+            0.2 * inch,
+            stroke=1,
+        )
         # c.roundRect(inner_rect_x, inner_rect_y, inner_rect_width, inner_rect_height, 0.2 * inch)
         # c.rect(x, y, rect_width, rect_height)
 
