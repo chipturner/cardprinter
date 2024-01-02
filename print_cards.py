@@ -47,7 +47,6 @@ def draw_card(
     text_width = 2.0 * inch
     text_height = 2.0 * inch
 
-
     # Draw the paragraph in the rectangle
     p.wrapOn(c, text_width, text_height)
     p.drawOn(
