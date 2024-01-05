@@ -103,7 +103,12 @@ def create_template(input_file: Path, output_file: Path) -> None:
         content_height = page_height - 2 * margin
 
     margin = 0.2 * inch
-    for i, line in enumerate(lines):
+    i = 0
+    for line in lines:
+        # Skip line if the last column is not empty
+        if line[-1].strip():
+            continue
+        i += 1
         # Add a new page if the current one is full
         if i % 9 == 0 and i != 0:
             c.showPage()
@@ -122,8 +127,8 @@ def create_template(input_file: Path, output_file: Path) -> None:
         c.restoreState()
     c.save()
 
+input_directory: Path = Path(sys.argv[1])
 
-input_file: Path = Path(sys.argv[1])
-output_file: Path = input_file.with_suffix(".pdf")
-
-create_template(input_file, output_file)
+for csv_file in input_directory.glob("*.csv"):
+    output_file: Path = csv_file.with_suffix(".pdf")
+    create_template(csv_file, output_file)
