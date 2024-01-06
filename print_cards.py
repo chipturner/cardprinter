@@ -146,8 +146,12 @@ def create_template(input_file: Path, output_file: Path) -> None:
     c.save()
 
 
-input_directory: Path = Path(sys.argv[1])
+def main():
+    input_directory: Path = Path(sys.argv[1])
 
-for csv_file in input_directory.glob("*.csv"):
-    output_file: Path = csv_file.with_suffix(".pdf")
-    create_template(csv_file, output_file)
+    for csv_file in input_directory.glob("*.csv"):
+        output_file: Path = csv_file.with_suffix(".pdf")
+        create_template(csv_file, output_file)
+
+if __name__ == "__main__":
+    main()
