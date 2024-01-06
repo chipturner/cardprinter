@@ -19,13 +19,16 @@ BORDER_GAP: float = inch / 16.0
 PARA_LEADING_SIZE = 18
 
 @dataclass
-class CSVLine:
+class Quote:
+    """
+    Represents a quote with its contents, attribution, and date string.
+    """
     contents: str
     attribution: Optional[str]
     date_string: str
 
 def draw_card(
-    c: canvas.Canvas, line: CSVLine, style: Paragraph, attribution_style: Paragraph
+    c: canvas.Canvas, line: Quote, style: Paragraph, attribution_style: Paragraph
 ) -> None:
     c.saveState()
     c.setStrokeColorRGB(0, 1, 0)
@@ -95,14 +98,14 @@ def create_template(input_file: Path, output_file: Path) -> None:
     attribution_style.leading = PARA_LEADING_SIZE
 
     # Read lines from the input file
-    lines: List[CSVLine] = []
+    lines: List[Quote] = []
     with open(input_file, "r") as file:
         reader = csv.reader(file, delimiter=",", quotechar='"')
         for row in reader:
             contents = row[0]
             attribution = row[1] if len(row) > 2 else None
             date_string = row[-1]
-            lines.append(CSVLine(contents, attribution, date_string))
+            lines.append(Quote(contents, attribution, date_string))
 
 
     lines.pop(0)
