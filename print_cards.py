@@ -60,11 +60,11 @@ def draw_card(
     # Calculate text width and height for word wrap
     text_width = 2.0 * inch - BORDER_GAP - CUT_GAP
     text_height = 2.0 * inch - BORDER_GAP
-    corners = 0.25 * inch, text_height - 0.25 * inch, text_width, text_height
+    corners = 0.25 * inch, text_height - 0.50 * inch, text_width, text_height
 
     # Draw the paragraph in the rectangle
     p.wrapOn(c, text_width, text_height)
-    p.drawOn(c, corners[0], corners[1])
+    p.drawOn(c, corners[0], text_height - p.height / 2 + 0.25 * inch)
     # c.roundRect(*corners, 0)
 
     if line.attribution:
@@ -73,7 +73,7 @@ def draw_card(
         p.drawOn(
             c,
             corners[0],
-            (p.height) * 1.5,
+            0.15 * inch,
         )
 
     c.restoreState()
