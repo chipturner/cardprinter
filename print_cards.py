@@ -1,24 +1,31 @@
 import csv
-from pathlib import Path
 import random
-from reportlab.lib.pagesizes import letter
-from reportlab.pdfgen import canvas
-from reportlab.lib.units import inch
-from reportlab.lib import colors
-from reportlab.platypus import Paragraph
-from reportlab.lib.styles import getSampleStyleSheet
-
 import sys
-from typing import List
+from dataclasses import dataclass
+from pathlib import Path
+from typing import List, Optional
+
+from reportlab.lib import colors
+from reportlab.lib.pagesizes import letter
+from reportlab.lib.styles import getSampleStyleSheet
+from reportlab.lib.units import inch
+from reportlab.pdfgen import canvas
+from reportlab.platypus import Paragraph
 
 CARD_WIDTH: float = 2.5 * inch
 CARD_HEIGHT: float = 3.5 * inch
 CUT_GAP: float = inch * 0.2 / 6
 BORDER_GAP: float = inch / 16.0
+PARA_LEADING_SIZE = 18
 
+@dataclass
+class CSVLine:
+    contents: str
+    attribution: Optional[str]
+    date_string: str
 
 def draw_card(
-    c: canvas.Canvas, line: List[str], style: Paragraph, attribution_style: Paragraph
+    c: canvas.Canvas, line: CSVLine, style: Paragraph, attribution_style: Paragraph
 ) -> None:
     c.saveState()
     c.setStrokeColorRGB(0, 1, 0)
@@ -33,7 +40,7 @@ def draw_card(
     c.setStrokeColorRGB(1.0, 0, 0)
     c.translate(BORDER_GAP + CUT_GAP, BORDER_GAP + CUT_GAP)
     c.setLineWidth(2)
-    if len(line) == 1:
+    if not line.attribution:
         c.setStrokeColorRGB(0, 0, 1)
     else:
         c.setStrokeColorRGB(1, 0, 0)
@@ -41,7 +48,7 @@ def draw_card(
         0, 0, CARD_WIDTH - 2 * BORDER_GAP, CARD_HEIGHT - 2 * BORDER_GAP, 0.2 * inch
     )
 
-    p = Paragraph(f"<b>{line[0].strip()}</b>", style)
+    p = Paragraph(f"<b>{line.contents.strip()}</b>", style)
 
     # Calculate text width and height for word wrap
     text_width = 2.0 * inch
@@ -54,9 +61,9 @@ def draw_card(
         0.25 * inch,
         text_height - 0.25 * inch,
     )
-
-    if len(line) == 2:
-        p = Paragraph(f"<i> - {line[1].strip()}</i>", attribution_style)
+    
+    if line.attribution:
+        p = Paragraph(f"<i> - {line.attribution.strip()}</i>", attribution_style)
         p.wrapOn(c, text_width, text_height)
         p.drawOn(
             c,
@@ -79,18 +86,24 @@ def create_template(input_file: Path, output_file: Path) -> None:
     style.alignment = 1  # Center alignment
     style.textColor = colors.black
     style.fontSize = 14
+    style.leading = PARA_LEADING_SIZE
 
     attribution_style = styles["Normal"].clone("Attribiution")
     attribution_style.alignment = 2  # Right alignment
     attribution_style.textColor = colors.black
     attribution_style.fontSize = 10
+    attribution_style.leading = PARA_LEADING_SIZE
 
     # Read lines from the input file
-    lines: List[List[str]] = []
+    lines: List[CSVLine] = []
     with open(input_file, "r") as file:
         reader = csv.reader(file, delimiter=",", quotechar='"')
         for row in reader:
-            lines.append(row)
+            contents = row[0]
+            attribution = row[1] if len(row) > 2 else None
+            date_string = row[-1]
+            lines.append(CSVLine(contents, attribution, date_string))
+
 
     lines.pop(0)
     random.shuffle(lines)
@@ -106,9 +119,9 @@ def create_template(input_file: Path, output_file: Path) -> None:
     i = 0
     for line in lines:
         # Skip line if the last column is not empty
-        if line[-1].strip():
+        if line.date_string:
             continue
-        i += 1
+
         # Add a new page if the current one is full
         if i % 9 == 0 and i != 0:
             c.showPage()
@@ -125,6 +138,7 @@ def create_template(input_file: Path, output_file: Path) -> None:
         c.translate(x, y)
         draw_card(c, line, style, attribution_style)
         c.restoreState()
+        i += 1
     c.save()
 
 input_directory: Path = Path(sys.argv[1])
