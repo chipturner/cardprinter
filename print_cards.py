@@ -18,14 +18,17 @@ CUT_GAP: float = inch * 0.2 / 6
 BORDER_GAP: float = inch / 16.0
 PARA_LEADING_SIZE = 18
 
+
 @dataclass
 class Quote:
     """
     Represents a quote with its contents, attribution, and date string.
     """
+
     contents: str
     attribution: Optional[str]
     date_string: str
+
 
 def draw_card(
     c: canvas.Canvas, line: Quote, style: Paragraph, attribution_style: Paragraph
@@ -47,6 +50,7 @@ def draw_card(
         c.setStrokeColorRGB(0, 0, 1)
     else:
         c.setStrokeColorRGB(1, 0, 0)
+
     c.roundRect(
         0, 0, CARD_WIDTH - 2 * BORDER_GAP, CARD_HEIGHT - 2 * BORDER_GAP, 0.2 * inch
     )
@@ -54,23 +58,21 @@ def draw_card(
     p = Paragraph(f"<b>{line.contents.strip()}</b>", style)
 
     # Calculate text width and height for word wrap
-    text_width = 2.0 * inch
-    text_height = 2.0 * inch
+    text_width = 2.0 * inch - BORDER_GAP - CUT_GAP
+    text_height = 2.0 * inch - BORDER_GAP
+    corners = 0.25 * inch, text_height - 0.25 * inch, text_width, text_height
 
     # Draw the paragraph in the rectangle
     p.wrapOn(c, text_width, text_height)
-    p.drawOn(
-        c,
-        0.25 * inch,
-        text_height - 0.25 * inch,
-    )
-    
+    p.drawOn(c, corners[0], corners[1])
+    # c.roundRect(*corners, 0)
+
     if line.attribution:
         p = Paragraph(f"<i> - {line.attribution.strip()}</i>", attribution_style)
         p.wrapOn(c, text_width, text_height)
         p.drawOn(
             c,
-            0.25 * inch,
+            corners[0],
             (p.height) * 1.5,
         )
 
@@ -107,7 +109,6 @@ def create_template(input_file: Path, output_file: Path) -> None:
             date_string = row[-1]
             lines.append(Quote(contents, attribution, date_string))
 
-
     lines.pop(0)
     random.shuffle(lines)
 
@@ -143,6 +144,7 @@ def create_template(input_file: Path, output_file: Path) -> None:
         c.restoreState()
         i += 1
     c.save()
+
 
 input_directory: Path = Path(sys.argv[1])
 
